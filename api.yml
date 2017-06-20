@@ -1,0 +1,106 @@
+swagger: "2.0"
+
+info:
+   title: Users API
+   description: Public API for loading users.
+   version: 0.0.1
+   contact:
+      name: Peter Clark
+      email: @gmail.com
+
+host: localhost
+
+schemes:
+   - http
+   - https
+
+basePath: /
+
+paths:
+   /__log:
+      post:
+         summary: Log Level Update
+         description: Updates the log level for the service. Only supports levels "debug" and "info".
+         produces:
+            - text/plain
+         tags:
+            - Admin
+         consumes:
+            - application/json
+         parameters:
+            -  name: body
+               in: body
+               required: true
+               description: The log level to update to.
+               schema:
+                  type: object
+                  properties:
+                     level:
+                        type: string
+                        enum: [debug, info]
+                  required:
+                     - level
+                  example:
+                     level: info
+         responses:
+            200:
+               description: We have updated the log level as required.
+               examples:
+                  text/plain; charset=utf-8: Updated log level to "info"
+            400:
+               description: Invalid log level, or invalid json request.
+               examples:
+                  text/plain; charset=utf-8: Failed to parse log level update request
+   /__health:
+      get:
+         summary: Healthchecks
+         description: Runs application healthchecks and returns FT Healthcheck style json.
+         produces:
+            - application/json
+         tags:
+            - Health
+         responses:
+            200:
+               description: Should always return 200 along with the output of the healthchecks - regardless of whether the healthchecks failed or not. Please inspect the overall `ok` property to see whether or not the application is healthy.
+               examples:
+                  application/json:
+                    application: users-api
+                    time: 2017-06-20T22:39:30.677385449+01:00
+                    healthy: true
+                    results:
+                      - name: ping
+                        severity: 1
+                        ok: true
+                        description: Simple ping check.
+                        impact: No impact.
+                        checkOutput: pong
+                        duration: 0
+   /__build-info:
+      get:
+         summary: Build Information
+         description: Returns application build info, such as the git repository and revision, the golang version it was built with, and the app release version.
+         produces:
+            - application/json
+         tags:
+            - Info
+         responses:
+            200:
+               description: Outputs build information as described in the summary.
+               examples:
+                  application/json; charset=UTF-8:
+                     version: "0.0.7"
+                     repository: "https://github.com/Gambi-Plc/someting.git"
+                     revision: "7cdbdb18b4a518eef3ebb1b545fc124612f9d7cd"
+                     builder: "go version go1.6.3 linux/amd64"
+                     dateTime: "20161123122615"
+   /__gtg:
+      get:
+         summary: Good To Go
+         description: Lightly healthchecks the application, and returns a 200 if it's Good-To-Go.
+         tags:
+            - Health
+         responses:
+            200:
+               description: The application is healthy enough to perform all its functions correctly - i.e. good to go.
+            503:
+               description: One or more of the applications healthchecks have failed, so please do not use the app. See the /__health endpoint for more detailed information.
